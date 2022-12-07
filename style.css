@@ -1,0 +1,56 @@
+/* jura font */
+@import url('https://fonts.googleapis.com/css2?family=Jura:wght@300;400;500;600;700&display=swap');
+/* poppins font */
+@import url('https://fonts.googleapis.com/css2?family=Jura:wght@300;400;500;600;700&display=swap');
+
+/* Debut Style Commun */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    text-decoration: none;
+    list-style-type: none;
+    outline: none;
+    font-family: "Jura", sans-serif;
+}
+
+html{
+    font-size: 62.5%;
+}
+
+/* Fin Style Commun */
+
+/* Background */
+.page-bg {
+    position: fixed;
+    width: 100%;
+    height: 100vh;
+    background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)),
+      url(image/bg.jpg) center no-repeat;
+    background-size: cover;
+  }
+
+/*Fin Background */
+
+/* Souris */
+/* Mouse Circle */
+.mouse-circle,
+.mouse-dot {
+  border-radius: 50%;
+  position: fixed;
+  z-index: 300;
+}
+
+.mouse-circle {
+  width: 6rem;
+  height: 6rem;
+  border: 0.1rem solid #c7a622;
+}
+
+.mouse-dot {
+    width: 0.5rem;
+    height: 0.5rem;
+    background-color: #9b0e0e;
+  }
+/* Fin Souris */
+  
