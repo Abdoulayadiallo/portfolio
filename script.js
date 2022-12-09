@@ -1,9 +1,14 @@
 // Mouse Circle
 const mouseCircle = document.querySelector(".mouse-circle");
 const mouseDot = document.querySelector(".mouse-dot");
-const mouseCircleFn = (x,y) => {
-mouseCircle.style.cssText = `top: ${y}px; left: ${x}px ;opacity: 1`;
-mouseDot.style.cssText = `top: ${y}px; left: ${x}px ;opacity: 1`;
+
+let mouseCircleBool = true;
+
+const mouseCircleFn = (x, y) => {
+  mouseCircleBool &&
+    (mouseCircle.style.cssText = `top: ${y}px; left: ${x}px; opacity: 1`);
+
+  mouseDot.style.cssText = `top: ${y}px; left: ${x}px; opacity: 1`;
 };
 // End of Mouse Circle
 
@@ -12,10 +17,10 @@ const circles = document.querySelectorAll(".circle");
 const mainImg = document.querySelector(".main-circle img");
 let mX=0;
 let mY=0;
-let z=30;
+let z=50;
 
 const animateCircles = (e,x,y) => {
-  //Si la souris bouge horizontalement
+  //Si souris movement horizontale
   //souris à gauche image à droite
   if(x < mX){
     circles.forEach((circle) => {
@@ -29,7 +34,7 @@ const animateCircles = (e,x,y) => {
     mainImg.style.left=`-${z}px`
   }
   // Si la souris bouge verticalement
-  //souris en bas image en haut
+  // souris en bas image en haut
   if(y < mY){
     circles.forEach((circle) => {
       circle.style.top = `${z}px`;
@@ -45,13 +50,81 @@ const animateCircles = (e,x,y) => {
   mY = e.clientY;
 }
 //Fin Souris animation
+
+let hoveredElPosition = [];
+
+const stickyElement = (x, y, hoveredEl) => {
+  // Sticky Element
+  if (hoveredEl.classList.contains("sticky")) {
+    hoveredElPosition.length < 1 &&
+      (hoveredElPosition = [hoveredEl.offsetTop, hoveredEl.offsetLeft]);
+
+    hoveredEl.style.cssText = `top: ${y}px; left: ${x}px`;
+
+    if (
+      hoveredEl.offsetTop <= hoveredElPosition[0] - 100 ||
+      hoveredEl.offsetTop >= hoveredElPosition[0] + 100 ||
+      hoveredEl.offsetLeft <= hoveredElPosition[1] - 100 ||
+      hoveredEl.offsetLeft >= hoveredElPosition[1] + 100
+    ) {
+      hoveredEl.style.cssText = "";
+      hoveredElPosition = [];
+    }
+
+    hoveredEl.onmouseleave = () => {
+      hoveredEl.style.cssText = "";
+      hoveredElPosition = [];
+    };
+  }
+  // End of Sticky Element
+};
+
+// Mouse Circle Transform
+const mouseCircleTransform = (hoveredEl) => {
+  if (hoveredEl.classList.contains("pointer-enter")) {
+    hoveredEl.onmousemove = () => {
+      mouseCircleBool = false;
+      mouseCircle.style.cssText = `
+      width: ${hoveredEl.getBoundingClientRect().width}px;
+      height: ${hoveredEl.getBoundingClientRect().height}px;
+      top: ${hoveredEl.getBoundingClientRect().top}px;
+      left: ${hoveredEl.getBoundingClientRect().left}px;
+      opacity: 1;
+      transform: translate(0, 0);
+      animation: none;
+      border-radius: ${getComputedStyle(hoveredEl).borderBottomLeftRadius};
+      transition: width .5s, height .5s, top .5s, left .5s, transform .5s, border-radius .5s;
+      `;
+    };
+
+    hoveredEl.onmouseleave = () => {
+      mouseCircleBool = true;
+    };
+
+    document.onscroll = () => {
+      if (!mouseCircleBool) {
+        mouseCircle.style.top = `${hoveredEl.getBoundingClientRect().top}px`;
+      }
+    };
+  }
+};
+// End of Mouse Circle Transform
+
 document.body.addEventListener("mousemove",(e) => {
     let x = e.clientX;
     let y = e.clientY;
 
     mouseCircleFn(x,y);
     animateCircles(e,x,y);
+
+    const hoveredEl = document.elementFromPoint(x, y);
+
+    stickyElement(x, y, hoveredEl);
+  
+    mouseCircleTransform(hoveredEl);
 });
+
+
 document.body.addEventListener("mouseleave",()=> {
   mouseCircle.style.opacity = '0';
   mouseDot.style.opacity = '0';
@@ -81,7 +154,107 @@ mainBtns.forEach((btn) => {
 
 // Fin Button Principal
 
-// A propos de moi Text
+// Progress Bar
+const sections = document.querySelectorAll("section");
+const progressBar = document.querySelector(".progress-bar");
+const halfCircles = document.querySelectorAll(".half-circle");
+const halfCircleTop = document.querySelector(".half-circle-top");
+const progressBarCircle = document.querySelector(".progress-bar-circle");
+
+let scrolledPortion = 0;
+let scrollBool = false;
+let imageWrapper = false;
+
+const progressBarFn = (bigImgWrapper) => {
+  imageWrapper = bigImgWrapper;
+  let pageHeight = 0;
+  const pageViewportHeight = window.innerHeight;
+
+  if (!imageWrapper) {
+    pageHeight = document.documentElement.scrollHeight;
+    scrolledPortion = window.pageYOffset;
+  } else {
+    pageHeight = imageWrapper.firstElementChild.scrollHeight;
+    scrolledPortion = imageWrapper.scrollTop;
+  }
+
+  const scrolledPortionDegree =
+    (scrolledPortion / (pageHeight - pageViewportHeight)) * 360;
+
+  halfCircles.forEach((el) => {
+    el.style.transform = `rotate(${scrolledPortionDegree}deg)
+`;
+
+    if (scrolledPortionDegree >= 180) {
+      halfCircles[0].style.transform = "rotate(180deg)";
+      halfCircleTop.style.opacity = "0";
+    } else {
+      halfCircleTop.style.opacity = "1";
+    }
+  });
+
+  scrollBool = scrolledPortion + pageViewportHeight === pageHeight;
+
+  // Fleche Rotation
+  if (scrollBool) {
+    progressBarCircle.style.transform = "rotate(180deg)";
+  } else {
+    progressBarCircle.style.transform = "rotate(0)";
+  }
+  // Fin Fleche Rotation
+};
+
+// Progress Bar Click
+progressBar.addEventListener("click", (e) => {
+  e.preventDefault();
+
+  if (!imageWrapper) {
+    const sectionPositions = Array.from(sections).map(
+      (section) => scrolledPortion + section.getBoundingClientRect().top
+    );
+
+    const position = sectionPositions.find((sectionPosition) => {
+      return sectionPosition > scrolledPortion;
+    });
+
+    scrollBool ? window.scrollTo(0, 0) : window.scrollTo(0, position);
+  } else {
+    scrollBool
+      ? imageWrapper.scrollTo(0, 0)
+      : imageWrapper.scrollTo(0, imageWrapper.scrollHeight);
+  }
+});
+// Fin Progress Bar Click
+
+progressBarFn();
+
+//Fin Progress Bar
+
+// Navigation
+const menuIcon = document.querySelector(".menu-icon");
+const navbar = document.querySelector(".navbar");
+
+const scrollFn = () => {
+  menuIcon.classList.add("show-menu-icon");
+  navbar.classList.add("hide-navbar");
+
+  if (window.scrollY === 0) {
+    menuIcon.classList.remove("show-menu-icon");
+    navbar.classList.remove("hide-navbar");
+  }
+
+  progressBarFn();
+};
+
+document.addEventListener("scroll", scrollFn);
+
+menuIcon.addEventListener("click", () => {
+  menuIcon.classList.remove("show-menu-icon");
+  navbar.classList.remove("hide-navbar");
+});
+// Fin Navigation
+
+// A propos de moi Texte
 const aboutMeText = document.querySelector(".about-me-text");
 const aboutMeTextContent =
   "Je suis un développeur fullstack et designer web et mobile. J'ai suivi 6 mois de formation à Odc qui m'a permis d'accueillir des connaissances solides en développement web et mobile. :)";
@@ -95,7 +268,7 @@ Array.from(aboutMeTextContent).forEach((char) => {
     e.target.style.animation = "aboutMeTextAnim 10s infinite";
   });
 });
-// Fin a propos de moi Text
+// Fin a propos de moi Texte
 
 // Projects
 const container = document.querySelector(".container");
@@ -115,7 +288,7 @@ projects.forEach((project, i) => {
     project.firstElementChild.style.top = "2rem";
   });
 
-  // Grandir Project Image
+  // Grandissement de l'image du projet
   project.addEventListener("click", () => {
     const bigImgWrapper = document.createElement("div");
     bigImgWrapper.className = "project-img-wrapper";
@@ -150,7 +323,7 @@ projects.forEach((project, i) => {
       progressBarFn();
     };
   });
-  // End of Big Project Image
+  // Fin du grandissement d'image
 
   i >= 6 && (project.style.cssText = "display: none; opacity: 0");
 });
@@ -217,8 +390,9 @@ document.querySelectorAll(".service-btn").forEach((service) => {
   });
 });
 // Fin Section 4
+
 // Section 5
-// Form
+// Formulaire
 const formHeading = document.querySelector(".form-heading");
 const formInputs = document.querySelectorAll(".contact-form-input");
 
@@ -239,7 +413,7 @@ formInputs.forEach((input) => {
     }, 300);
   });
 });
-// End of Form
+// Fin formulaire
 // Slideshow
 const slideshow = document.querySelector(".slideshow");
 
@@ -264,9 +438,9 @@ setInterval(() => {
     }, 500);
   }, 500);
 }, 3000);
-// End of Slideshow
+// Fin Slideshow
 
-// Form Validation
+// Validation Formulaire
 const form = document.querySelector(".contact-form");
 const username = document.getElementById("name");
 const email = document.getElementById("email");
@@ -323,5 +497,5 @@ form.addEventListener("Envoyer", (e) => {
 
   notValid && e.preventDefault();
 });
-// End of Form Validation
-// End of Section 5
+// Fin validation Formulaire
+// Fin Section 5
