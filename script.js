@@ -328,7 +328,7 @@ projects.forEach((project, i) => {
   i >= 6 && (project.style.cssText = "display: none; opacity: 0");
 });
 
-// Projects Button
+// telechargement Bouton
 const section3 = document.querySelector(".section-3");
 const projectsBtn = document.querySelector(".projects-btn");
 const projectsBtnText = document.querySelector(".projects-btn span");
